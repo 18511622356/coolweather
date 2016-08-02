@@ -1,6 +1,5 @@
 package com.example.coolweather.model;
 
-import android.R.integer;
 
 public class County {
 	private int id;
@@ -16,19 +15,19 @@ public class County {
 		this.id = id;
 	}
 	
-	public String getcountyName(){
+	public String getCountyName(){
 		return countyName;
 	}
 	
-	public void setcountyName(String countyName){
+	public void setCountyName(String countyName){
 		this.countyName = countyName;
 	}
 	
-	public String getcountyCode(){
+	public String getCountyCode(){
 		return countyCode;
 	}
 	
-	public void setcountyCode(String countyCode){
+	public void setCountyCode(String countyCode){
 		this.countyCode = countyCode;
 	}
 	

@@ -1,6 +1,5 @@
 package com.example.coolweather.model;
 
-import android.R.integer;
 
 public class City {
 	private int id;
