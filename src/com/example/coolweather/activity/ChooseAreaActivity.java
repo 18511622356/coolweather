@@ -15,7 +15,10 @@ import com.example.coolweather.util.Utility;
 import android.app.Activity;
 import android.app.DownloadManager.Query;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
@@ -31,47 +34,54 @@ public class ChooseAreaActivity extends Activity {
 	public static final int LEVEL_PROVINCE = 0;
 	public static final int LEVEL_CITY = 1;
 	public static final int LEVEL_COUNTY = 2;
-	
+
 	private ProgressDialog progressDialog;
 	private TextView titleText;
 	private ListView listView;
 	private ArrayAdapter<String> adapter;
 	private CoolWeatherDB coolWeatherDB;
 	private List<String> dataList = new ArrayList<String>();
-	
+
 	/**
 	 * 省列表
 	 */
 	private List<Province> provinceList;
-	
+
 	/**
 	 * 市列表
 	 */
 	private List<City> cityList;
-	
+
 	/**
 	 * 县列表
 	 */
 	private List<County> countyList;
-	
+
 	/**
 	 * 选中的省份
 	 */
 	private Province selectedProvince;
-	
+
 	/**
 	 * 选中的城市
 	 */
 	private City selectedCity;
-	
+
 	/**
 	 * 当前选中的级别
 	 */
 	private int currentLevel;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean("city_selected", false)) {
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
 		listView = (ListView) findViewById(R.id.list_view);
@@ -88,12 +98,18 @@ public class ChooseAreaActivity extends Activity {
 				}else if (currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(index);
 					queryCounties();
+				}else if (currentLevel == LEVEL_COUNTY) {
+					String countycode =countyList.get(index).getCountyCode();
+					Intent intent = new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+					intent.putExtra("country_code", countycode);
+					startActivity(intent);
+					finish();
 				}
 			}
 		});
 		queryProvinces();
 	}
-	
+
 	/**
 	 * 查询全国所有的省，优先从数据库查询，如果没有查询到再去服务器上查询。
 	 */
@@ -112,7 +128,7 @@ public class ChooseAreaActivity extends Activity {
 			queryFromServer(null,"province");
 		}
 	}
-	
+
 	/**
 	 * 查询全国所有的市，优先从数据库查询，如果没有查询到再去服务器上查询。
 	 */
@@ -131,7 +147,7 @@ public class ChooseAreaActivity extends Activity {
 			queryFromServer(selectedProvince.getProvinceCode(),"city");
 		}
 	}
-	
+
 	/**
 	 * 查询全国所有的县，优先从数据库查询，如果没有查询到再去服务器上查询。
 	 */
@@ -150,7 +166,7 @@ public class ChooseAreaActivity extends Activity {
 			queryFromServer(selectedCity.getCityCode(),"city");
 		}
 	}
-	
+
 	/**
 	 * 根据传人的代号和类型从服务器上查询省市县数据
 	 */
@@ -163,7 +179,7 @@ public class ChooseAreaActivity extends Activity {
 		}
 		showProgressDialog();
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
-			
+
 			@Override
 			public void onFinish(String response) {
 				boolean result = false;
@@ -179,7 +195,7 @@ public class ChooseAreaActivity extends Activity {
 				if (result) {
 					//通过runOnUiThread()方法回到主线程处理逻辑
 					runOnUiThread(new Runnable() {
-						
+
 						@Override
 						public void run() {
 							// TODO Auto-generated method stub
@@ -195,12 +211,12 @@ public class ChooseAreaActivity extends Activity {
 					});
 				}
 			}
-			
+
 			@Override
 			public void onError(Exception e) {
 				// 通过runOnUiThread()方法回到主线程处理逻辑
-				runOnUiThread(new Runnable() {
-					
+				runOnUiThread(new Runnable() { 
+
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
@@ -212,7 +228,7 @@ public class ChooseAreaActivity extends Activity {
 			}
 		});
 	}
-	
+
 	/**
 	 * 显示进度对话框
 	 */
@@ -224,7 +240,7 @@ public class ChooseAreaActivity extends Activity {
 		}
 		progressDialog.show();
 	}
-	
+
 	/**
 	 * 显示关闭对话框
 	 */
@@ -233,8 +249,8 @@ public class ChooseAreaActivity extends Activity {
 			progressDialog.dismiss();
 		}
 	}
-	
-	
+
+
 	/**
 	 * 获取Back按键，根据当前的级别来判断，此时应该返回市列表，省列表，还是直接退出。
 	 */
